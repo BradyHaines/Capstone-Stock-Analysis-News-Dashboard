@@ -13,7 +13,7 @@ db = mongo_client["stock_monitor"]
 collection = db["stock_articles"]
 
 # OpenAI API Key
-client = OpenAI(api_key="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")  # Replace with your real key
+client = OpenAI(api_key="X")  # Replace with your real key
 
 seen_urls = set()
 
@@ -162,3 +162,4 @@ def run_monitoring_loop():
 # Uncomment this if running directly for testing:
 # if __name__ == "__main__":
 #     run_monitoring_loop()
+
