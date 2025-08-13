@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ symbol }} - Stock News</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        h1 { color: #222; }
+        .article { background: #fff; padding: 15px; margin-bottom: 15px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .positive { color: green; }
+        .negative { color: red; }
+        .neutral { color: gray; }
+    </style>
+</head>
+<body>
+    <h1>News for {{ symbol }}</h1>
+    <a href="/">← Back to Dashboard</a>
+    {% for article in articles %}
+        <div class="article">
+            <h3>{{ article.title }}</h3>
+            <p><strong>Published:</strong> {{ article.timestamp }}</p>
+
+            {% if article.sentiment %}
+                <p><strong>Sentiment:</strong> 
+                    <span class="{{ article.sentiment }}">{{ article.sentiment.capitalize() }}</span>
+                </p>
+            {% else %}
+                <p><strong>Sentiment:</strong> <span class="neutral">Unknown</span></p>
+            {% endif %}
+
+            {% if article.recommendation %}
+                <p><strong>Recommendation:</strong> {{ article.recommendation }}</p>
+            {% endif %}
+
+            {% if article.prices and article.prices[symbol] %}
+                <p><strong>Price at publish:</strong> ${{ '%.2f'|format(article.prices[symbol]) }}</p>
+            {% endif %}
+
+            {% for key, value in article.items() %}
+                {% if key.endswith(symbol) and (key.startswith('price_after_') or key.startswith('change_')) %}
+                    <p><strong>{{ key }}:</strong> {{ value }}</p>
+                {% endif %}
+            {% endfor %}
+
+            {% if article.url %}
+                <p><a href="{{ article.url }}" target="_blank">Read more</a></p>
+            {% endif %}
+        </div>
+    {% endfor %}
+</body>
+</html>

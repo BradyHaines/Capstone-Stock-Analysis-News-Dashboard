@@ -1,0 +1,9 @@
+requests
+pandas
+beautifulsoup4
+yfinance
+transformers
+torch
+flask
+plotly
+pymongo

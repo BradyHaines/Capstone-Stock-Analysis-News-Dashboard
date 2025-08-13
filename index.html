@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock News Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f8f9fa; }
+        h1 { text-align: center; margin-bottom: 30px; }
+        .filters { margin-bottom: 20px; text-align: center; }
+        select, input[type="text"], button { padding: 8px; margin: 5px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        th, td { padding: 12px 16px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #343a40; color: #fff; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>📊 Stock News Dashboard</h1>
+
+    <div class="filters">
+        <form method="get">
+            <input type="text" name="ticker" placeholder="Filter by ticker..." value="{{ request.args.get('ticker', '') }}">
+            <select name="sentiment">
+                <option value="All" {% if request.args.get('sentiment') == 'All' %}selected{% endif %}>All Sentiments</option>
+                <option value="Positive" {% if request.args.get('sentiment') == 'Positive' %}selected{% endif %}>Positive</option>
+                <option value="Neutral" {% if request.args.get('sentiment') == 'Neutral' %}selected{% endif %}>Neutral</option>
+                <option value="Negative" {% if request.args.get('sentiment') == 'Negative' %}selected{% endif %}>Negative</option>
+            </select>
+            <select name="sort_field">
+                <option value="date" {% if request.args.get('sort_field') == 'date' %}selected{% endif %}>Sort by Date</option>
+                <option value="sentiment" {% if request.args.get('sort_field') == 'sentiment' %}selected{% endif %}>Sort by Sentiment</option>
+            </select>
+            <select name="sort_order">
+                <option value="desc" {% if request.args.get('sort_order') == 'desc' %}selected{% endif %}>Descending</option>
+                <option value="asc" {% if request.args.get('sort_order') == 'asc' %}selected{% endif %}>Ascending</option>
+            </select>
+            <button type="submit">Apply</button>
+        </form>
+    </div>
+
+    {% if articles %}
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Source</th>
+                <th>Date</th>
+                <th>Ticker</th>
+                <th>Sentiment</th>
+                <th>Recommendation</th>
+                <th>Price @ Publish</th>
+                <th>+1h</th>
+                <th>+2h</th>
+                <th>+4h</th>
+                <th>+1d</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for article in articles %}
+            {% set sentiment = article.analysis.split('Sentiment: ')[1].split('\n')[0] if 'Sentiment:' in article.analysis else 'N/A' %}
+            {% set recommendation = article.analysis.split('Recommendation: ')[1] if 'Recommendation:' in article.analysis else 'N/A' %}
+            {% set ticker = article.tickers[0] if article.tickers else 'N/A' %}
+            <tr>
+                <td><a href="{{ article.url }}" target="_blank">{{ article.title }}</a></td>
+                <td>{{ article.publisher }}</td>
+                <td>{{ article.date_scraped }}</td>
+                <td>{{ ticker }}</td>
+                <td>{{ sentiment }}</td>
+                <td>{{ recommendation }}</td>
+
+                <!-- Price at publish -->
+                <td>
+                    {% set price = article.prices.get(ticker) if article.prices else None %}
+                    {% if price is not none and price != 'N/A' %}
+                        ${{ '%.2f' % price }}
+                    {% else %}N/A{% endif %}
+                </td>
+
+                <!-- +1h -->
+                <td>
+                    {% set p1h = article.price_after_1h.get(ticker) if article.price_after_1h else None %}
+                    {% set c1h = article.change_1h.get(ticker) if article.change_1h else None %}
+                    {% if p1h is not none %}${{ '%.2f' % p1h }}{% else %}N/A{% endif %}
+                    {% if c1h is not none %} ({{ '%.2f' % c1h }}%){% endif %}
+                </td>
+
+                <!-- +2h -->
+                <td>
+                    {% set p2h = article.price_after_2h.get(ticker) if article.price_after_2h else None %}
+                    {% set c2h = article.change_2h.get(ticker) if article.change_2h else None %}
+                    {% if p2h is not none %}${{ '%.2f' % p2h }}{% else %}N/A{% endif %}
+                    {% if c2h is not none %} ({{ '%.2f' % c2h }}%){% endif %}
+                </td>
+
+                <!-- +4h -->
+                <td>
+                    {% set p4h = article.price_after_4h.get(ticker) if article.price_after_4h else None %}
+                    {% set c4h = article.change_4h.get(ticker) if article.change_4h else None %}
+                    {% if p4h is not none %}${{ '%.2f' % p4h }}{% else %}N/A{% endif %}
+                    {% if c4h is not none %} ({{ '%.2f' % c4h }}%){% endif %}
+                </td>
+
+                <!-- +1d -->
+                <td>
+                    {% set p1d = article.price_after_1d.get(ticker) if article.price_after_1d else None %}
+                    {% set c1d = article.change_1d.get(ticker) if article.change_1d else None %}
+                    {% if p1d is not none %}${{ '%.2f' % p1d }}{% else %}N/A{% endif %}
+                    {% if c1d is not none %} ({{ '%.2f' % c1d }}%){% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>No articles found.</p>
+    {% endif %}
+</body>
+</html>
