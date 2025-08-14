@@ -1,0 +1,1 @@
+Index, app, and monitor_with_mongo are the only necessary files. An API key is required in monitor_with_mongo. To run the app, press the play button in app.py, and then open the given link in a browser
